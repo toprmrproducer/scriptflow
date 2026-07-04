@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const homeHref = import.meta.env.BASE_URL;
+const homeHref = import.meta.env.BASE_URL.replace(/\/+$/, '') + '/';
 ---
 
 <Layout

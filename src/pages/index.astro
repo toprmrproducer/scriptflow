@@ -1,10 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const base = import.meta.env.BASE_URL;
-const aboutHref = `${base}about`.replace(/\/\/+/g, '/');
-const faqHref = `${base}faq`.replace(/\/\/+/g, '/');
-const privacyHref = `${base}privacy`.replace(/\/\/+/g, '/');
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '') + '/';
+const aboutHref = `${base}about`;
+const faqHref = `${base}faq`;
+const privacyHref = `${base}privacy`;
 ---
 
 <Layout
