@@ -1,0 +1,41 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+	title="Privacy Policy — ScriptFlow"
+	description="ScriptFlow's privacy policy: your files never leave your device."
+	canonicalPath="/privacy"
+>
+	<h1 class="text-3xl font-semibold text-[#2B2013]">Privacy Policy</h1>
+	<div class="mt-6 space-y-4 text-[#5C4F3D]">
+		<p>
+			ScriptFlow does not upload, store, or transmit any audio or video
+			file you select. All transcription happens locally in your browser
+			using WebAssembly and an on-device speech recognition model. Your
+			files never leave your device.
+		</p>
+		<p>
+			The speech recognition model itself (roughly 40&ndash;75MB) is
+			downloaded once from a public CDN and cached by your browser so
+			future transcriptions work offline. This download contains no
+			information about you or your files.
+		</p>
+		<p>
+			This site may show advertising via Google AdSense, which can use
+			cookies to serve relevant ads. You can control ad personalization
+			in your
+			<a
+				href="https://adssettings.google.com/"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-[#B8860B] underline"
+			>Google Ads Settings</a>.
+		</p>
+		<p>
+			We do not use analytics that identify individual users, and we do
+			not sell or share any data because we do not collect any file
+			content in the first place.
+		</p>
+	</div>
+</Layout>

@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+	{
+		q: 'Is ScriptFlow really free?',
+		a: 'Yes. Every transcription runs on your own device, so there is no server cost per file and no reason to charge or limit usage.',
+	},
+	{
+		q: 'Are my files uploaded anywhere?',
+		a: 'No. Files are processed locally in your browser using WebAssembly and an on-device AI model. They never leave your device.',
+	},
+	{
+		q: 'What file formats are supported?',
+		a: 'Any audio or video format your browser can decode — including MP3, WAV, M4A, MP4, MOV, and WebM.',
+	},
+	{
+		q: 'Why is the first transcription slow?',
+		a: 'The first time you use ScriptFlow, your browser downloads a small speech-recognition model (roughly 40–75MB). After that it is cached, and every transcription after the first is fast and works offline.',
+	},
+	{
+		q: 'How accurate is the transcript?',
+		a: 'ScriptFlow uses a compact Whisper model tuned for speed on everyday hardware. It handles clear speech well; heavy background noise, overlapping speakers, or strong accents can reduce accuracy.',
+	},
+];
+---
+
+<Layout
+	title="FAQ — ScriptFlow"
+	description="Frequently asked questions about ScriptFlow's free, private, on-device transcription tool."
+	canonicalPath="/faq"
+>
+	<h1 class="text-3xl font-semibold text-[#2B2013]">Frequently Asked Questions</h1>
+	<div class="mt-8 space-y-8">
+		{
+			faqs.map((item) => (
+				<div>
+					<h2 class="text-lg font-semibold text-[#2B2013]">{item.q}</h2>
+					<p class="mt-2 text-[#5C4F3D]">{item.a}</p>
+				</div>
+			))
+		}
+	</div>
+</Layout>

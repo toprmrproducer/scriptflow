@@ -1,0 +1,360 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
+const aboutHref = `${base}about`.replace(/\/\/+/g, '/');
+const faqHref = `${base}faq`.replace(/\/\/+/g, '/');
+const privacyHref = `${base}privacy`.replace(/\/\/+/g, '/');
+---
+
+<Layout
+	title="ScriptFlow — Free, Private, On-Device Audio & Video Transcription"
+	description="Transcribe any audio or video file to text for free, entirely on your own device. No uploads, no API keys, no cost — powered by an on-device Whisper speech recognition model running in your browser."
+	canonicalPath="/"
+>
+	<section class="text-center">
+		<h1 class="text-4xl font-semibold tracking-tight text-[#2B2013] sm:text-5xl">
+			Turn speech into text.
+			<span class="block text-[#C9982E]">Privately, for free.</span>
+		</h1>
+		<p class="mx-auto mt-5 max-w-2xl text-lg text-[#5C4F3D]">
+			Drop in an audio or video file and get a clean transcript, powered by an
+			on-device AI speech recognition model. Nothing is ever uploaded anywhere.
+		</p>
+	</section>
+
+	<section class="mx-auto mt-10 max-w-2xl rounded-2xl border border-[#E8DFC8] bg-white p-6 text-sm text-[#5C4F3D] shadow-sm">
+		<p>
+			ScriptFlow runs a small Whisper speech-recognition model
+			(<code class="rounded bg-[#FAF6EC] px-1.5 py-0.5 text-[#B8860B]">Xenova/whisper-tiny.en</code>)
+			directly in your browser using WebAssembly, entirely on your own
+			hardware. The first time you use it, your browser downloads the
+			model (roughly 40&ndash;75MB) and caches it locally &mdash; every
+			transcription after that works fully offline, with no server, no
+			API key, and no cost. Because transcription runs on your device
+			rather than a data center GPU, longer files will take longer to
+			process, especially on older or lower-powered machines.
+		</p>
+	</section>
+
+	<section class="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#E8DFC8] bg-white p-6 shadow-sm">
+		<div class="space-y-5">
+			<div>
+				<label for="file-input" class="mb-2 block text-sm font-medium text-[#2B2013]">
+					Choose an audio or video file
+				</label>
+				<input
+					id="file-input"
+					type="file"
+					accept="audio/*,video/*"
+					class="block w-full cursor-pointer rounded-xl border border-[#E8DFC8] bg-white text-sm text-[#5C4F3D] file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#C9982E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#B8860B]"
+				/>
+				<p id="file-name" class="mt-2 text-xs text-[#8A7D66]"></p>
+			</div>
+
+			<button
+				id="transcribe-btn"
+				type="button"
+				disabled
+				class="w-full rounded-xl bg-[#C9982E] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#EDE6D6] disabled:text-[#B3A788]"
+			>
+				Transcribe
+			</button>
+
+			<div id="status-area" class="hidden rounded-xl border border-[#E8DFC8] bg-[#FAF6EC] p-4">
+				<div class="flex items-center gap-3">
+					<span
+						id="status-spinner"
+						class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[#E8DFC8] border-t-[#C9982E]"
+					></span>
+					<p id="status-text" class="text-sm text-[#5C4F3D]">Idle</p>
+				</div>
+				<div id="progress-track" class="mt-3 hidden h-1.5 w-full overflow-hidden rounded-full bg-[#E8DFC8]">
+					<div id="progress-bar" class="h-full w-0 rounded-full bg-[#C9982E] transition-all"></div>
+				</div>
+			</div>
+
+			<div id="error-area" class="hidden rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"></div>
+
+			<div id="result-area" class="hidden space-y-3">
+				<div class="flex items-center justify-between">
+					<label for="transcript" class="text-sm font-medium text-[#2B2013]">Transcript</label>
+					<button
+						id="copy-btn"
+						type="button"
+						class="rounded-xl border border-[#E8DFC8] px-3 py-1.5 text-xs font-semibold text-[#5C4F3D] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+					>
+						Copy transcript
+					</button>
+					<button
+						id="download-btn"
+						type="button"
+						class="ml-2 rounded-xl border border-[#E8DFC8] px-3 py-1.5 text-xs font-semibold text-[#5C4F3D] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+					>
+						Download .txt
+					</button>
+				</div>
+				<textarea
+					id="transcript"
+					readonly
+					rows="10"
+					class="w-full rounded-xl border border-[#E8DFC8] bg-white p-4 text-sm text-[#2B2013]"
+					placeholder="Your transcript will appear here…"
+				></textarea>
+			</div>
+		</div>
+	</section>
+
+	<section class="mx-auto mt-16 max-w-2xl">
+		<h2 class="text-center text-2xl font-semibold text-[#2B2013]">Why ScriptFlow</h2>
+		<div class="mt-8 grid gap-6 sm:grid-cols-3">
+			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
+				<p class="text-sm font-semibold text-[#2B2013]">100% private</p>
+				<p class="mt-2 text-sm text-[#5C4F3D]">Your file never leaves your device. There is no server to send it to.</p>
+			</div>
+			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
+				<p class="text-sm font-semibold text-[#2B2013]">Free, no account</p>
+				<p class="mt-2 text-sm text-[#5C4F3D]">No sign-up, no API key, no usage limits. Ever.</p>
+			</div>
+			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
+				<p class="text-sm font-semibold text-[#2B2013]">Works offline</p>
+				<p class="mt-2 text-sm text-[#5C4F3D]">After the first model download, transcribe with no internet connection at all.</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="mx-auto mt-16 max-w-2xl text-center">
+		<div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-[#5C4F3D]">
+			<a href={aboutHref} class="hover:text-[#B8860B]">About ScriptFlow</a>
+			<a href={faqHref} class="hover:text-[#B8860B]">Frequently Asked Questions</a>
+			<a href={privacyHref} class="hover:text-[#B8860B]">Privacy Policy</a>
+		</div>
+	</section>
+</Layout>
+
+<script>
+	function escapeHtml(str: string): string {
+		return str
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	const fileInput = document.getElementById('file-input') as HTMLInputElement;
+	const fileNameEl = document.getElementById('file-name') as HTMLParagraphElement;
+	const transcribeBtn = document.getElementById('transcribe-btn') as HTMLButtonElement;
+	const statusArea = document.getElementById('status-area') as HTMLDivElement;
+	const statusSpinner = document.getElementById('status-spinner') as HTMLSpanElement;
+	const statusText = document.getElementById('status-text') as HTMLParagraphElement;
+	const progressTrack = document.getElementById('progress-track') as HTMLDivElement;
+	const progressBar = document.getElementById('progress-bar') as HTMLDivElement;
+	const errorArea = document.getElementById('error-area') as HTMLDivElement;
+	const resultArea = document.getElementById('result-area') as HTMLDivElement;
+	const transcriptEl = document.getElementById('transcript') as HTMLTextAreaElement;
+	const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+	const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+	let selectedFile: File | null = null;
+	let worker: Worker | null = null;
+
+	// Tracks download progress per-file so the overall percentage across
+	// multiple model shards doesn't jump around.
+	const fileProgress = new Map<string, { loaded: number; total: number }>();
+
+	function showError(message: string) {
+		errorArea.textContent = message;
+		errorArea.classList.remove('hidden');
+		statusArea.classList.add('hidden');
+		transcribeBtn.disabled = false;
+		transcribeBtn.textContent = 'Transcribe';
+	}
+
+	function clearError() {
+		errorArea.classList.add('hidden');
+		errorArea.textContent = '';
+	}
+
+	function setStatus(text: string, opts: { spinning?: boolean; showProgress?: boolean; percent?: number } = {}) {
+		statusArea.classList.remove('hidden');
+		statusText.textContent = text;
+		statusSpinner.classList.toggle('hidden', opts.spinning === false);
+
+		if (opts.showProgress) {
+			progressTrack.classList.remove('hidden');
+			progressBar.style.width = `${Math.max(0, Math.min(100, opts.percent ?? 0))}%`;
+		} else {
+			progressTrack.classList.add('hidden');
+		}
+	}
+
+	fileInput.addEventListener('change', () => {
+		clearError();
+		const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+		selectedFile = file;
+		// User-controlled filename is rendered via textContent (safe), but we
+		// route it through escapeHtml first as defense-in-depth in case this
+		// pattern is ever copy-pasted into an innerHTML sink later.
+		fileNameEl.textContent = file ? `Selected: ${escapeHtml(file.name)}` : '';
+		transcribeBtn.disabled = !file;
+		resultArea.classList.add('hidden');
+		statusArea.classList.add('hidden');
+	});
+
+	copyBtn.addEventListener('click', async () => {
+		try {
+			await navigator.clipboard.writeText(transcriptEl.value);
+			const original = copyBtn.textContent;
+			copyBtn.textContent = 'Copied!';
+			setTimeout(() => {
+				copyBtn.textContent = original;
+			}, 1500);
+		} catch {
+			// Fallback for browsers/contexts where the Clipboard API is blocked.
+			transcriptEl.select();
+			document.execCommand('copy');
+		}
+	});
+
+	downloadBtn.addEventListener('click', () => {
+		const blob = new Blob([transcriptEl.value], { type: 'text/plain' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		const baseName = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, '') : 'transcript';
+		a.download = `${baseName}.txt`;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		URL.revokeObjectURL(url);
+	});
+
+	/**
+	 * Decode an arbitrary audio/video file into a 16kHz mono Float32Array PCM
+	 * buffer, which is the input format Whisper (and transformers.js's ASR
+	 * pipeline) expects. We use an OfflineAudioContext created directly at the
+	 * target sample rate: decoding into it and rendering does the resample and
+	 * downmix to mono for us in one correct pass, without hand-rolling a
+	 * resampling filter.
+	 */
+	async function decodeTo16kMono(file: File): Promise<Float32Array> {
+		const arrayBuffer = await file.arrayBuffer();
+
+		// Decode at the file's native rate first using a throwaway AudioContext,
+		// since decodeAudioData needs a real (non-offline) or offline context
+		// and we don't yet know the source sample rate/channel count.
+		const probeCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+		let decoded: AudioBuffer;
+		try {
+			decoded = await probeCtx.decodeAudioData(arrayBuffer.slice(0));
+		} finally {
+			await probeCtx.close();
+		}
+
+		const targetSampleRate = 16000;
+		const duration = decoded.duration;
+		const offlineCtx = new OfflineAudioContext(
+			1, // mono output
+			Math.max(1, Math.ceil(duration * targetSampleRate)),
+			targetSampleRate
+		);
+
+		const source = offlineCtx.createBufferSource();
+		source.buffer = decoded;
+		source.connect(offlineCtx.destination);
+		source.start(0);
+
+		const rendered = await offlineCtx.startRendering();
+		return rendered.getChannelData(0).slice();
+	}
+
+	async function handleTranscribe() {
+		if (!selectedFile) return;
+
+		clearError();
+		resultArea.classList.add('hidden');
+		transcribeBtn.disabled = true;
+		transcribeBtn.textContent = 'Working…';
+		fileProgress.clear();
+
+		try {
+			setStatus('Decoding audio…', { spinning: true });
+			const pcm = await decodeTo16kMono(selectedFile);
+
+			setStatus('Downloading speech model (first time only)… 0%', {
+				spinning: true,
+				showProgress: true,
+				percent: 0,
+			});
+
+			if (!worker) {
+				const workerUrl = new URL('transcribe-worker.js', document.baseURI);
+				worker = new Worker(workerUrl, { type: 'module' });
+			}
+
+			const result: string = await new Promise((resolve, reject) => {
+				if (!worker) return reject(new Error('Worker failed to initialize.'));
+
+				worker.onmessage = (event: MessageEvent) => {
+					const data = event.data || {};
+
+					if (data.type === 'progress') {
+						const p = data.progress || {};
+						if (p.status === 'progress' && p.file) {
+							fileProgress.set(p.file, { loaded: p.loaded ?? 0, total: p.total ?? 0 });
+							let loadedSum = 0;
+							let totalSum = 0;
+							for (const entry of fileProgress.values()) {
+								loadedSum += entry.loaded;
+								totalSum += entry.total;
+							}
+							const percent = totalSum > 0 ? Math.round((loadedSum / totalSum) * 100) : 0;
+							setStatus(`Downloading speech model (first time only)… ${percent}%`, {
+								spinning: true,
+								showProgress: true,
+								percent,
+							});
+						}
+					} else if (data.type === 'status') {
+						if (data.stage === 'loading-model') {
+							setStatus('Downloading speech model (first time only)…', {
+								spinning: true,
+								showProgress: true,
+								percent: 0,
+							});
+						} else if (data.stage === 'transcribing') {
+							setStatus('Transcribing…', { spinning: true });
+						}
+					} else if (data.type === 'result') {
+						resolve(data.text || '');
+					} else if (data.type === 'error') {
+						reject(new Error(data.message || 'Transcription failed.'));
+					}
+				};
+
+				worker.onerror = (event: ErrorEvent) => {
+					reject(new Error(event.message || 'Worker crashed unexpectedly.'));
+				};
+
+				worker.postMessage({ type: 'transcribe', audio: pcm }, [pcm.buffer]);
+			});
+
+			transcriptEl.value = result || '(No speech detected in this file.)';
+			resultArea.classList.remove('hidden');
+			setStatus('Done', { spinning: false });
+		} catch (err) {
+			console.error(err);
+			showError(
+				err instanceof Error
+					? `Something went wrong: ${err.message}`
+					: 'Something went wrong while transcribing this file.'
+			);
+		} finally {
+			transcribeBtn.disabled = !selectedFile;
+			transcribeBtn.textContent = 'Transcribe';
+		}
+	}
+
+	transcribeBtn.addEventListener('click', handleTranscribe);
+</script>
