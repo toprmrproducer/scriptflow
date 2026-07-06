@@ -37,8 +37,25 @@ function getTranscriber() {
 	return transcriberPromise;
 }
 
+// Normalize a transformers.js chunk list ([{ timestamp: [start, end], text }])
+// into plain serializable objects. The final chunk's end timestamp can be null
+// (Whisper quirk) — fall back to the known audio duration, then to start + 2s.
+function normalizeChunks(chunks, audioDuration) {
+	if (!Array.isArray(chunks)) return [];
+	return chunks
+		.filter((c) => c && typeof c.text === 'string')
+		.map((c) => {
+			const start = Array.isArray(c.timestamp) && typeof c.timestamp[0] === 'number' ? c.timestamp[0] : 0;
+			let end = Array.isArray(c.timestamp) && typeof c.timestamp[1] === 'number' ? c.timestamp[1] : null;
+			if (end === null || end <= start) {
+				end = typeof audioDuration === 'number' && audioDuration > start ? audioDuration : start + 2;
+			}
+			return { start, end, text: c.text };
+		});
+}
+
 self.addEventListener('message', async (event) => {
-	const { type, audio } = event.data || {};
+	const { type, audio, duration } = event.data || {};
 
 	if (type !== 'transcribe') return;
 
@@ -49,14 +66,61 @@ self.addEventListener('message', async (event) => {
 
 		self.postMessage({ type: 'status', stage: 'transcribing' });
 
+		// --- Live partial transcript plumbing (whisper-web pattern) -----------
+		// chunk_callback fires when a 30s window is finalised; callback_function
+		// fires on every generation step within the current window. We decode
+		// the accumulated tokens with the tokenizer's ASR decoder and stream the
+		// partial text back to the page, throttled so we don't flood the main
+		// thread with one postMessage per generated token.
+		const timePrecision =
+			transcriber.processor.feature_extractor.config.chunk_length /
+			transcriber.model.config.max_source_positions;
+
+		const chunksToProcess = [{ tokens: [], finalised: false }];
+		let lastPartialSent = 0;
+
+		function chunkCallback(chunk) {
+			const last = chunksToProcess[chunksToProcess.length - 1];
+			Object.assign(last, chunk);
+			last.finalised = true;
+			if (!chunk.is_last) {
+				chunksToProcess.push({ tokens: [], finalised: false });
+			}
+		}
+
+		function callbackFunction(item) {
+			const last = chunksToProcess[chunksToProcess.length - 1];
+			last.tokens = [...item[0].output_token_ids];
+
+			const now = Date.now();
+			if (now - lastPartialSent < 300) return; // throttle
+			lastPartialSent = now;
+
+			try {
+				const decoded = transcriber.tokenizer._decode_asr(chunksToProcess, {
+					time_precision: timePrecision,
+					return_timestamps: true,
+					force_full_sequences: false,
+				});
+				self.postMessage({ type: 'partial', text: (decoded && decoded[0]) || '' });
+			} catch {
+				// Partial decoding is best-effort; never let it kill the real job.
+			}
+		}
+
 		const output = await transcriber(audio, {
 			chunk_length_s: 30,
 			stride_length_s: 5,
+			return_timestamps: true,
+			force_full_sequences: false,
+			chunk_callback: chunkCallback,
+			callback_function: callbackFunction,
 		});
 
 		self.postMessage({
 			type: 'result',
 			text: (output && output.text ? output.text : '').trim(),
+			chunks: normalizeChunks(output && output.chunks, duration),
 		});
 	} catch (err) {
 		self.postMessage({
