@@ -9,24 +9,25 @@ const privacyHref = `${base}privacy`;
 
 <Layout
 	title="ScriptFlow — Free, Private, On-Device Audio & Video Transcription"
-	description="Transcribe any audio or video file to text for free, entirely on your own device. No uploads, no API keys, no cost — powered by an on-device Whisper speech recognition model running in your browser."
+	description="Transcribe any audio or video file to text for free, entirely on your own device. No uploads, no API keys, no cost — powered by an on-device Whisper speech recognition model running in your browser. Export as TXT, SRT, or VTT."
 	canonicalPath="/"
 >
 	<section class="text-center">
-		<h1 class="text-4xl font-semibold tracking-tight text-[#2B2013] sm:text-5xl">
+		<h1 class="text-4xl text-[#221B10] sm:text-5xl">
 			Turn speech into text.
 			<span class="block text-[#C9982E]">Privately, for free.</span>
 		</h1>
-		<p class="mx-auto mt-5 max-w-2xl text-lg text-[#5C4F3D]">
+		<p class="mx-auto mt-6 max-w-2xl text-lg text-[#4A4234]">
 			Drop in an audio or video file and get a clean transcript, powered by an
 			on-device AI speech recognition model. Nothing is ever uploaded anywhere.
+			Export as plain text, or as SRT / VTT subtitles with timestamps.
 		</p>
 	</section>
 
-	<section class="mx-auto mt-10 max-w-2xl rounded-2xl border border-[#E8DFC8] bg-white p-6 text-sm text-[#5C4F3D] shadow-sm">
+	<section class="mt-12 rounded-2xl border border-[#EAE4D6] bg-[#FAF8F3] p-6 text-base text-[#4A4234] shadow-sm sm:p-7">
 		<p>
 			ScriptFlow runs a small Whisper speech-recognition model
-			(<code class="rounded bg-[#FAF6EC] px-1.5 py-0.5 text-[#B8860B]">Xenova/whisper-tiny.en</code>)
+			(<code class="rounded bg-white px-1.5 py-0.5 text-[15px] text-[#B8860B]">Xenova/whisper-tiny.en</code>)
 			directly in your browser using WebAssembly, entirely on your own
 			hardware. The first time you use it, your browser downloads the
 			model (roughly 40&ndash;75MB) and caches it locally &mdash; every
@@ -37,102 +38,204 @@ const privacyHref = `${base}privacy`;
 		</p>
 	</section>
 
-	<section class="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#E8DFC8] bg-white p-6 shadow-sm">
+	<section class="mt-8 rounded-2xl border border-[#EAE4D6] bg-white p-6 shadow-sm sm:p-7">
 		<div class="space-y-5">
 			<div>
-				<label for="file-input" class="mb-2 block text-sm font-medium text-[#2B2013]">
+				<label for="file-input" class="mb-2 block text-base font-semibold text-[#221B10]">
 					Choose an audio or video file
 				</label>
 				<input
 					id="file-input"
 					type="file"
 					accept="audio/*,video/*"
-					class="block w-full cursor-pointer rounded-xl border border-[#E8DFC8] bg-white text-sm text-[#5C4F3D] file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#C9982E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#B8860B]"
+					class="block w-full cursor-pointer rounded-xl border border-[#EAE4D6] bg-white p-1.5 text-base text-[#4A4234] file:mr-4 file:min-h-[44px] file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#C9982E] file:px-5 file:py-2.5 file:text-base file:font-semibold file:text-white file:transition hover:file:bg-[#B8860B] disabled:cursor-not-allowed disabled:opacity-60"
 				/>
-				<p id="file-name" class="mt-2 text-xs text-[#8A7D66]"></p>
+				<p id="file-name" class="mt-2 text-sm text-[#8A7E68]"></p>
 			</div>
 
 			<button
 				id="transcribe-btn"
 				type="button"
 				disabled
-				class="w-full rounded-xl bg-[#C9982E] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#EDE6D6] disabled:text-[#B3A788]"
+				class="min-h-[48px] w-full rounded-xl bg-[#C9982E] px-5 py-3 text-base font-bold text-white transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#F0EBDD] disabled:text-[#B3A788]"
 			>
 				Transcribe
 			</button>
 
-			<div id="status-area" class="hidden rounded-xl border border-[#E8DFC8] bg-[#FAF6EC] p-4">
+			<div id="status-area" class="hidden rounded-xl border border-[#EAE4D6] bg-[#FAF8F3] p-4">
 				<div class="flex items-center gap-3">
 					<span
 						id="status-spinner"
-						class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[#E8DFC8] border-t-[#C9982E]"
+						class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[#EAE4D6] border-t-[#C9982E]"
 					></span>
-					<p id="status-text" class="text-sm text-[#5C4F3D]">Idle</p>
+					<p id="status-text" aria-live="polite" class="text-base text-[#4A4234]">Idle</p>
 				</div>
-				<div id="progress-track" class="mt-3 hidden h-1.5 w-full overflow-hidden rounded-full bg-[#E8DFC8]">
+				<div id="progress-track" class="mt-3 hidden h-1.5 w-full overflow-hidden rounded-full bg-[#EAE4D6]">
 					<div id="progress-bar" class="h-full w-0 rounded-full bg-[#C9982E] transition-all"></div>
 				</div>
+				<p id="progress-note" class="mt-2 hidden text-sm text-[#8A7E68]">
+					The model downloads once, then it&rsquo;s cached so future transcriptions work offline.
+				</p>
+
+				<div id="partial-wrap" class="mt-4 hidden">
+					<p class="text-sm font-semibold text-[#221B10]">Live transcript preview</p>
+					<div
+						id="partial-live"
+						class="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap rounded-lg border border-[#EAE4D6] bg-white p-3 text-[15px] leading-relaxed text-[#4A4234]"
+					></div>
+				</div>
+
+				<!-- Slow-tool nudge toward the Snake game while a job is actively
+				     processing. The full playable card lives below the tool; this
+				     just points the bored user to it. -->
+				<p id="snake-nudge" class="mt-4 hidden text-sm text-[#8A7E68]">
+					This can take a moment &mdash;
+					<a href="#snake-game" class="font-semibold text-[#B8860B] underline transition hover:text-[#C9982E]">play a round of Snake while you wait</a>.
+				</p>
 			</div>
 
-			<div id="error-area" class="hidden rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"></div>
+			<div id="error-area" class="hidden rounded-xl border border-red-300 bg-red-50 p-4 text-base text-red-700"></div>
 
 			<div id="result-area" class="hidden space-y-3">
-				<div class="flex items-center justify-between">
-					<label for="transcript" class="text-sm font-medium text-[#2B2013]">Transcript</label>
+				<div class="flex flex-wrap items-center gap-2">
+					<label for="transcript" class="mr-auto text-base font-semibold text-[#221B10]">Transcript</label>
 					<button
 						id="copy-btn"
 						type="button"
-						class="rounded-xl border border-[#E8DFC8] px-3 py-1.5 text-xs font-semibold text-[#5C4F3D] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+						class="min-h-[44px] rounded-xl border border-[#EAE4D6] px-4 py-2 text-sm font-semibold text-[#4A4234] transition hover:border-[#C9982E] hover:text-[#B8860B]"
 					>
-						Copy transcript
+						Copy
 					</button>
 					<button
 						id="download-btn"
 						type="button"
-						class="ml-2 rounded-xl border border-[#E8DFC8] px-3 py-1.5 text-xs font-semibold text-[#5C4F3D] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+						class="min-h-[44px] rounded-xl border border-[#EAE4D6] px-4 py-2 text-sm font-semibold text-[#4A4234] transition hover:border-[#C9982E] hover:text-[#B8860B]"
 					>
 						Download .txt
 					</button>
+					<button
+						id="download-srt-btn"
+						type="button"
+						class="min-h-[44px] rounded-xl border border-[#EAE4D6] px-4 py-2 text-sm font-semibold text-[#4A4234] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+					>
+						Download .srt
+					</button>
+					<button
+						id="download-vtt-btn"
+						type="button"
+						class="min-h-[44px] rounded-xl border border-[#EAE4D6] px-4 py-2 text-sm font-semibold text-[#4A4234] transition hover:border-[#C9982E] hover:text-[#B8860B]"
+					>
+						Download .vtt
+					</button>
 				</div>
+
+				<!-- Per-segment timestamp toggle (niche feature). When ON, the
+				     transcript textarea shows each timestamped segment prefixed
+				     with [mm:ss]; the Copy / .txt exports follow whatever view is
+				     shown. .srt / .vtt always carry full timestamps regardless. -->
+				<label class="flex items-center gap-2.5 text-sm font-medium text-[#4A4234]">
+					<input
+						id="timestamp-toggle"
+						type="checkbox"
+						class="h-4 w-4 shrink-0 cursor-pointer accent-[#C9982E]"
+					/>
+					Show per-segment timestamps
+				</label>
+
 				<textarea
 					id="transcript"
 					readonly
 					rows="10"
-					class="w-full rounded-xl border border-[#E8DFC8] bg-white p-4 text-sm text-[#2B2013]"
+					class="w-full rounded-xl border border-[#EAE4D6] bg-white p-4 text-base leading-relaxed text-[#221B10]"
 					placeholder="Your transcript will appear here…"
 				></textarea>
 			</div>
 		</div>
 	</section>
 
-	<section class="mx-auto mt-16 max-w-2xl">
-		<h2 class="text-center text-2xl font-semibold text-[#2B2013]">Why ScriptFlow</h2>
+	<!-- =============================================================== -->
+	<!-- Snake boredom-filler. Surfaced prominently because transcription -->
+	<!-- is a genuinely slow, on-device task. Self-contained, zero deps.  -->
+	<!-- =============================================================== -->
+	<section id="snake-game" class="mx-auto mt-14 max-w-[820px]">
+		<details class="rounded-2xl border border-[#eae4d6] bg-[#faf8f3] p-5" open>
+			<summary class="cursor-pointer select-none font-[Sora] text-lg font-bold text-[#221b10]">This can take a moment — play a round of Snake while you wait</summary>
+			<div class="mt-4 flex flex-col items-center gap-3">
+				<canvas id="snake-canvas" width="320" height="320" class="rounded-lg border border-[#eae4d6] bg-white" style="touch-action:none"></canvas>
+				<div class="flex items-center gap-4 text-sm text-[#4a4234]">
+					<span>Score: <b id="snake-score">0</b></span>
+					<button id="snake-restart" class="rounded-lg bg-[#c9982e] px-4 py-2 font-semibold text-white transition hover:bg-[#b8860b]">Restart</button>
+				</div>
+				<p class="text-xs text-[#8a7e68]">Arrow keys / WASD, or swipe on mobile.</p>
+			</div>
+		</details>
+	</section>
+
+	<section class="mt-20">
+		<h2 class="text-center text-2xl text-[#221B10] sm:text-3xl">Why ScriptFlow</h2>
 		<div class="mt-8 grid gap-6 sm:grid-cols-3">
-			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
-				<p class="text-sm font-semibold text-[#2B2013]">100% private</p>
-				<p class="mt-2 text-sm text-[#5C4F3D]">Your file never leaves your device. There is no server to send it to.</p>
+			<div class="rounded-2xl border border-[#EAE4D6] bg-[#FAF8F3] p-6 text-center shadow-sm">
+				<p class="text-base font-bold text-[#221B10]">100% private</p>
+				<p class="mt-2 text-base text-[#4A4234]">Your file never leaves your device. There is no server to send it to.</p>
 			</div>
-			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
-				<p class="text-sm font-semibold text-[#2B2013]">Free, no account</p>
-				<p class="mt-2 text-sm text-[#5C4F3D]">No sign-up, no API key, no usage limits. Ever.</p>
+			<div class="rounded-2xl border border-[#EAE4D6] bg-[#FAF8F3] p-6 text-center shadow-sm">
+				<p class="text-base font-bold text-[#221B10]">Free, no account</p>
+				<p class="mt-2 text-base text-[#4A4234]">No sign-up, no API key, no usage limits. Ever.</p>
 			</div>
-			<div class="rounded-2xl border border-[#E8DFC8] bg-white p-5 text-center shadow-sm">
-				<p class="text-sm font-semibold text-[#2B2013]">Works offline</p>
-				<p class="mt-2 text-sm text-[#5C4F3D]">After the first model download, transcribe with no internet connection at all.</p>
+			<div class="rounded-2xl border border-[#EAE4D6] bg-[#FAF8F3] p-6 text-center shadow-sm">
+				<p class="text-base font-bold text-[#221B10]">TXT, SRT &amp; VTT</p>
+				<p class="mt-2 text-base text-[#4A4234]">Export plain text, or timestamped subtitles for video editors and players.</p>
 			</div>
 		</div>
 	</section>
 
-	<section class="mx-auto mt-16 max-w-2xl text-center">
-		<div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-[#5C4F3D]">
-			<a href={aboutHref} class="hover:text-[#B8860B]">About ScriptFlow</a>
-			<a href={faqHref} class="hover:text-[#B8860B]">Frequently Asked Questions</a>
-			<a href={privacyHref} class="hover:text-[#B8860B]">Privacy Policy</a>
+	<section class="mt-20 text-center">
+		<div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-base font-medium text-[#4A4234]">
+			<a href={aboutHref} class="py-2 transition hover:text-[#B8860B]">About ScriptFlow</a>
+			<a href={faqHref} class="py-2 transition hover:text-[#B8860B]">Frequently Asked Questions</a>
+			<a href={privacyHref} class="py-2 transition hover:text-[#B8860B]">Privacy Policy</a>
 		</div>
 	</section>
 </Layout>
 
+<!-- Snake boredom-filler engine (verbatim self-contained block). -->
+<script is:inline>
+(() => {
+  const cv = document.getElementById('snake-canvas'); if (!cv) return;
+  const ctx = cv.getContext('2d'); const G = 16, N = 20; let snake, dir, food, score, alive, loop;
+  const scoreEl = document.getElementById('snake-score');
+  function reset(){ snake=[{x:10,y:10}]; dir={x:0,y:0}; food=rndFood(); score=0; alive=true; if(scoreEl)scoreEl.textContent='0'; }
+  function rndFood(){ return {x:Math.floor(Math.random()*N), y:Math.floor(Math.random()*N)}; }
+  function step(){
+    if(!alive) return;
+    if(dir.x===0&&dir.y===0){ draw(); return; }
+    const h={x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+    if(h.x<0||h.y<0||h.x>=N||h.y>=N||snake.some(s=>s.x===h.x&&s.y===h.y)){ alive=false; draw(); return; }
+    snake.unshift(h);
+    if(h.x===food.x&&h.y===food.y){ score++; if(scoreEl)scoreEl.textContent=String(score); food=rndFood(); } else snake.pop();
+    draw();
+  }
+  function draw(){
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle='#c9982e'; snake.forEach(s=>ctx.fillRect(s.x*G+1,s.y*G+1,G-2,G-2));
+    ctx.fillStyle='#221b10'; ctx.fillRect(food.x*G+3,food.y*G+3,G-6,G-6);
+    if(!alive){ ctx.fillStyle='rgba(34,27,16,0.72)'; ctx.fillRect(0,0,cv.width,cv.height); ctx.fillStyle='#fff'; ctx.font='bold 20px Sora, sans-serif'; ctx.textAlign='center'; ctx.fillText('Game Over — Restart', cv.width/2, cv.height/2); }
+  }
+  function turn(x,y){ if((x!==0&&dir.x===0)||(y!==0&&dir.y===0)) dir={x,y}; }
+  window.addEventListener('keydown', e=>{ const k=e.key.toLowerCase(); if(['arrowup','w'].includes(k))turn(0,-1); else if(['arrowdown','s'].includes(k))turn(0,1); else if(['arrowleft','a'].includes(k))turn(-1,0); else if(['arrowright','d'].includes(k))turn(1,0); else return; e.preventDefault(); }, {passive:false});
+  let tx,ty; cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  cv.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; if(Math.abs(dx)>Math.abs(dy)) turn(dx>0?1:-1,0); else turn(0,dy>0?1:-1); },{passive:true});
+  document.getElementById('snake-restart')?.addEventListener('click', reset);
+  reset(); loop=setInterval(step, 110);
+})();
+</script>
+
 <script>
+	// Canonical escape helper: any user-controlled text that is ever routed
+	// through an innerHTML sink MUST go through this first. The filename display
+	// below uses textContent (inherently safe), so it does NOT pre-escape —
+	// pre-escaping a textContent write double-encodes characters like `&`
+	// and corrupts the visible filename.
 	function escapeHtml(str: string): string {
 		return str
 			.replace(/&/g, '&amp;')
@@ -140,6 +243,14 @@ const privacyHref = `${base}privacy`;
 			.replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;')
 			.replace(/'/g, '&#39;');
+	}
+	// Referenced so bundlers keep the canonical helper available for future use.
+	void escapeHtml;
+
+	interface TranscriptChunk {
+		start: number;
+		end: number;
+		text: string;
 	}
 
 	const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -150,25 +261,44 @@ const privacyHref = `${base}privacy`;
 	const statusText = document.getElementById('status-text') as HTMLParagraphElement;
 	const progressTrack = document.getElementById('progress-track') as HTMLDivElement;
 	const progressBar = document.getElementById('progress-bar') as HTMLDivElement;
+	const progressNote = document.getElementById('progress-note') as HTMLParagraphElement;
+	const partialWrap = document.getElementById('partial-wrap') as HTMLDivElement;
+	const partialLive = document.getElementById('partial-live') as HTMLDivElement;
+	const snakeNudge = document.getElementById('snake-nudge') as HTMLParagraphElement;
 	const errorArea = document.getElementById('error-area') as HTMLDivElement;
 	const resultArea = document.getElementById('result-area') as HTMLDivElement;
 	const transcriptEl = document.getElementById('transcript') as HTMLTextAreaElement;
 	const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
 	const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+	const downloadSrtBtn = document.getElementById('download-srt-btn') as HTMLButtonElement;
+	const downloadVttBtn = document.getElementById('download-vtt-btn') as HTMLButtonElement;
+	const timestampToggle = document.getElementById('timestamp-toggle') as HTMLInputElement;
 
 	let selectedFile: File | null = null;
 	let worker: Worker | null = null;
+	// Guards against concurrent jobs: a file change mid-run must never
+	// re-enable the Transcribe button and fire a second job into the same
+	// worker (the first job's promise would be orphaned and its result lost).
+	let isProcessing = false;
+	let lastChunks: TranscriptChunk[] = [];
+	// The plain, un-timestamped transcript text as produced by the model. Kept
+	// separate from what the textarea shows so toggling timestamps on/off is a
+	// pure re-render and never mutates the source text.
+	let plainTranscript = '';
+	let audioDurationSec = 0;
 
 	// Tracks download progress per-file so the overall percentage across
-	// multiple model shards doesn't jump around.
+	// multiple model shards doesn't jump around; maxPercentSeen keeps the
+	// visible number monotonic (small tokenizer files finish before the big
+	// ONNX shard joins the denominator, which would otherwise make the bar
+	// jump 100% -> 13%).
 	const fileProgress = new Map<string, { loaded: number; total: number }>();
+	let maxPercentSeen = 0;
 
 	function showError(message: string) {
 		errorArea.textContent = message;
 		errorArea.classList.remove('hidden');
 		statusArea.classList.add('hidden');
-		transcribeBtn.disabled = false;
-		transcribeBtn.textContent = 'Transcribe';
 	}
 
 	function clearError() {
@@ -183,21 +313,27 @@ const privacyHref = `${base}privacy`;
 
 		if (opts.showProgress) {
 			progressTrack.classList.remove('hidden');
+			progressNote.classList.remove('hidden');
 			progressBar.style.width = `${Math.max(0, Math.min(100, opts.percent ?? 0))}%`;
 		} else {
 			progressTrack.classList.add('hidden');
+			progressNote.classList.add('hidden');
 		}
 	}
+
+	/* ------------------------------------------------------------------ *
+	 *  Transcription flow
+	 * ------------------------------------------------------------------ */
 
 	fileInput.addEventListener('change', () => {
 		clearError();
 		const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 		selectedFile = file;
-		// User-controlled filename is rendered via textContent (safe), but we
-		// route it through escapeHtml first as defense-in-depth in case this
-		// pattern is ever copy-pasted into an innerHTML sink later.
-		fileNameEl.textContent = file ? `Selected: ${escapeHtml(file.name)}` : '';
-		transcribeBtn.disabled = !file;
+		// Filename is rendered via textContent, which cannot execute markup —
+		// see escapeHtml() above for the mandatory helper if this ever moves
+		// to an innerHTML sink.
+		fileNameEl.textContent = file ? `Selected: ${file.name}` : '';
+		transcribeBtn.disabled = !file || isProcessing;
 		resultArea.classList.add('hidden');
 		statusArea.classList.add('hidden');
 	});
@@ -217,18 +353,99 @@ const privacyHref = `${base}privacy`;
 		}
 	});
 
-	downloadBtn.addEventListener('click', () => {
-		const blob = new Blob([transcriptEl.value], { type: 'text/plain' });
+	function triggerDownload(content: string, extension: string, mime: string) {
+		const blob = new Blob([content], { type: mime });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
 		const baseName = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, '') : 'transcript';
-		a.download = `${baseName}.txt`;
+		a.download = `${baseName}.${extension}`;
 		document.body.appendChild(a);
 		a.click();
 		a.remove();
 		URL.revokeObjectURL(url);
+	}
+
+	downloadBtn.addEventListener('click', () => {
+		triggerDownload(transcriptEl.value, 'txt', 'text/plain');
 	});
+
+	// --- Timestamp formatting helpers -------------------------------------
+	// SRT uses HH:MM:SS,mmm ; VTT uses HH:MM:SS.mmm (comma vs dot the only
+	// difference). A shared padder keeps both correct.
+	function pad(n: number, w = 2): string {
+		return String(n).padStart(w, '0');
+	}
+
+	function formatTime(totalSeconds: number, msSep: ',' | '.'): string {
+		const clamped = Math.max(0, totalSeconds);
+		const hours = Math.floor(clamped / 3600);
+		const minutes = Math.floor((clamped % 3600) / 60);
+		const seconds = Math.floor(clamped % 60);
+		const millis = Math.round((clamped - Math.floor(clamped)) * 1000);
+		return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}${msSep}${pad(millis, 3)}`;
+	}
+
+	// Short [mm:ss] label for the in-textarea timestamp view.
+	function shortStamp(totalSeconds: number): string {
+		const clamped = Math.max(0, totalSeconds);
+		const minutes = Math.floor(clamped / 60);
+		const seconds = Math.floor(clamped % 60);
+		return `${pad(minutes)}:${pad(seconds)}`;
+	}
+
+	function usableChunks(): TranscriptChunk[] {
+		return lastChunks.filter((c) => c.text.trim() !== '');
+	}
+
+	function buildSrt(): string {
+		const usable = usableChunks();
+		if (usable.length === 0) {
+			const end = audioDurationSec > 0 ? audioDurationSec : 2;
+			return `1\n${formatTime(0, ',')} --> ${formatTime(end, ',')}\n${plainTranscript.trim()}\n`;
+		}
+		return (
+			usable
+				.map((c, i) => `${i + 1}\n${formatTime(c.start, ',')} --> ${formatTime(c.end, ',')}\n${c.text.trim()}`)
+				.join('\n\n') + '\n'
+		);
+	}
+
+	function buildVtt(): string {
+		const usable = usableChunks();
+		if (usable.length === 0) {
+			const end = audioDurationSec > 0 ? audioDurationSec : 2;
+			return `WEBVTT\n\n${formatTime(0, '.')} --> ${formatTime(end, '.')}\n${plainTranscript.trim()}\n`;
+		}
+		const cues = usable
+			.map((c) => `${formatTime(c.start, '.')} --> ${formatTime(c.end, '.')}\n${c.text.trim()}`)
+			.join('\n\n');
+		return `WEBVTT\n\n${cues}\n`;
+	}
+
+	// Transcript with a leading [mm:ss] on each segment, for the toggle view.
+	function timestampedText(): string {
+		const usable = usableChunks();
+		if (usable.length === 0) return plainTranscript;
+		return usable.map((c) => `[${shortStamp(c.start)}] ${c.text.trim()}`).join('\n');
+	}
+
+	// Re-render the textarea for the current toggle state, without touching the
+	// underlying source data.
+	function renderTranscript() {
+		if (!plainTranscript && lastChunks.length === 0) return;
+		transcriptEl.value = timestampToggle.checked ? timestampedText() : plainTranscript;
+	}
+
+	downloadSrtBtn.addEventListener('click', () => {
+		triggerDownload(buildSrt(), 'srt', 'application/x-subrip');
+	});
+
+	downloadVttBtn.addEventListener('click', () => {
+		triggerDownload(buildVtt(), 'vtt', 'text/vtt');
+	});
+
+	timestampToggle.addEventListener('change', renderTranscript);
 
 	/**
 	 * Decode an arbitrary audio/video file into a 16kHz mono Float32Array PCM
@@ -248,6 +465,11 @@ const privacyHref = `${base}privacy`;
 		let decoded: AudioBuffer;
 		try {
 			decoded = await probeCtx.decodeAudioData(arrayBuffer.slice(0));
+		} catch {
+			// Surface a human error instead of the browser's raw "Decoding failed".
+			throw new Error(
+				"This file couldn't be read as audio or video. It may be in a format your browser can't decode, or the file may be corrupted. Try MP3, WAV, M4A, MP4, MOV, or WebM."
+			);
 		} finally {
 			await probeCtx.close();
 		}
@@ -269,20 +491,55 @@ const privacyHref = `${base}privacy`;
 		return rendered.getChannelData(0).slice();
 	}
 
-	async function handleTranscribe() {
-		if (!selectedFile) return;
+	/** Peak-amplitude check so silent files return an honest empty result
+	 *  instead of a Whisper hallucination (tiny models "hear" words in
+	 *  silence — classically the token "you"). */
+	function isEffectivelySilent(pcm: Float32Array): boolean {
+		let peak = 0;
+		for (let i = 0; i < pcm.length; i++) {
+			const v = Math.abs(pcm[i]);
+			if (v > peak) peak = v;
+			if (peak > 0.001) return false;
+		}
+		return peak <= 0.001;
+	}
 
+	async function handleTranscribe() {
+		if (!selectedFile || isProcessing) return;
+
+		isProcessing = true;
 		clearError();
 		resultArea.classList.add('hidden');
+		partialWrap.classList.add('hidden');
+		partialLive.textContent = '';
 		transcribeBtn.disabled = true;
 		transcribeBtn.textContent = 'Working…';
+		// Lock the file input during a run — swapping the file mid-job would
+		// desync the displayed filename, downloads, and the running job.
+		fileInput.disabled = true;
 		fileProgress.clear();
+		maxPercentSeen = 0;
+		lastChunks = [];
+		plainTranscript = '';
+
+		// Nudge the bored user toward the Snake game while a job is running.
+		snakeNudge.classList.remove('hidden');
 
 		try {
 			setStatus('Decoding audio…', { spinning: true });
 			const pcm = await decodeTo16kMono(selectedFile);
+			audioDurationSec = pcm.length / 16000;
 
-			setStatus('Downloading speech model (first time only)… 0%', {
+			if (isEffectivelySilent(pcm)) {
+				plainTranscript = '(No speech detected — this file appears to be silent.)';
+				lastChunks = [];
+				renderTranscript();
+				resultArea.classList.remove('hidden');
+				setStatus('Done — the file contains no audible speech.', { spinning: false });
+				return;
+			}
+
+			setStatus('Loading speech model… 0%', {
 				spinning: true,
 				showProgress: true,
 				percent: 0,
@@ -293,7 +550,7 @@ const privacyHref = `${base}privacy`;
 				worker = new Worker(workerUrl, { type: 'module' });
 			}
 
-			const result: string = await new Promise((resolve, reject) => {
+			const outcome: { text: string; chunks: TranscriptChunk[] } = await new Promise((resolve, reject) => {
 				if (!worker) return reject(new Error('Worker failed to initialize.'));
 
 				worker.onmessage = (event: MessageEvent) => {
@@ -310,24 +567,35 @@ const privacyHref = `${base}privacy`;
 								totalSum += entry.total;
 							}
 							const percent = totalSum > 0 ? Math.round((loadedSum / totalSum) * 100) : 0;
-							setStatus(`Downloading speech model (first time only)… ${percent}%`, {
+							// Keep the displayed percentage monotonic.
+							maxPercentSeen = Math.max(maxPercentSeen, percent);
+							setStatus(`Loading speech model… ${maxPercentSeen}%`, {
 								spinning: true,
 								showProgress: true,
-								percent,
+								percent: maxPercentSeen,
 							});
 						}
 					} else if (data.type === 'status') {
 						if (data.stage === 'loading-model') {
-							setStatus('Downloading speech model (first time only)…', {
+							setStatus(`Loading speech model… ${maxPercentSeen}%`, {
 								spinning: true,
 								showProgress: true,
-								percent: 0,
+								percent: maxPercentSeen,
 							});
 						} else if (data.stage === 'transcribing') {
 							setStatus('Transcribing…', { spinning: true });
 						}
+					} else if (data.type === 'partial') {
+						if (typeof data.text === 'string' && data.text.trim() !== '') {
+							partialWrap.classList.remove('hidden');
+							partialLive.textContent = data.text;
+							partialLive.scrollTop = partialLive.scrollHeight;
+						}
 					} else if (data.type === 'result') {
-						resolve(data.text || '');
+						resolve({
+							text: data.text || '',
+							chunks: Array.isArray(data.chunks) ? data.chunks : [],
+						});
 					} else if (data.type === 'error') {
 						reject(new Error(data.message || 'Transcription failed.'));
 					}
@@ -337,20 +605,28 @@ const privacyHref = `${base}privacy`;
 					reject(new Error(event.message || 'Worker crashed unexpectedly.'));
 				};
 
-				worker.postMessage({ type: 'transcribe', audio: pcm }, [pcm.buffer]);
+				worker.postMessage({ type: 'transcribe', audio: pcm, duration: audioDurationSec }, [pcm.buffer]);
 			});
 
-			transcriptEl.value = result || '(No speech detected in this file.)';
+			lastChunks = outcome.chunks;
+			plainTranscript = outcome.text || '(No speech detected in this file.)';
+			renderTranscript();
 			resultArea.classList.remove('hidden');
 			setStatus('Done', { spinning: false });
 		} catch (err) {
 			console.error(err);
 			showError(
 				err instanceof Error
-					? `Something went wrong: ${err.message}`
+					? err.message.startsWith('This file')
+						? err.message
+						: `Something went wrong: ${err.message}`
 					: 'Something went wrong while transcribing this file.'
 			);
 		} finally {
+			isProcessing = false;
+			fileInput.disabled = false;
+			snakeNudge.classList.add('hidden');
+			partialWrap.classList.add('hidden');
 			transcribeBtn.disabled = !selectedFile;
 			transcribeBtn.textContent = 'Transcribe';
 		}

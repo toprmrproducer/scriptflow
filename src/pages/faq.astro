@@ -15,6 +15,10 @@ const faqs = [
 		a: 'Any audio or video format your browser can decode — including MP3, WAV, M4A, MP4, MOV, and WebM.',
 	},
 	{
+		q: 'Can I export the transcript?',
+		a: 'Yes — copy it with one click, download it as a plain .txt file, or download an .srt or .vtt subtitle file with timestamps for use in video editors, players, and web video captions. You can also toggle per-segment timestamps on or off in the transcript view.',
+	},
+	{
 		q: 'Why is the first transcription slow?',
 		a: 'The first time you use ScriptFlow, your browser downloads a small speech-recognition model (roughly 40–75MB). After that it is cached, and every transcription after the first is fast and works offline.',
 	},
@@ -30,13 +34,13 @@ const faqs = [
 	description="Frequently asked questions about ScriptFlow's free, private, on-device transcription tool."
 	canonicalPath="/faq"
 >
-	<h1 class="text-3xl font-semibold text-[#2B2013]">Frequently Asked Questions</h1>
-	<div class="mt-8 space-y-8">
+	<h1 class="text-3xl text-[#221B10] sm:text-4xl">Frequently Asked Questions</h1>
+	<div class="mt-10 space-y-9">
 		{
 			faqs.map((item) => (
 				<div>
-					<h2 class="text-lg font-semibold text-[#2B2013]">{item.q}</h2>
-					<p class="mt-2 text-[#5C4F3D]">{item.a}</p>
+					<h2 class="text-xl text-[#221B10]">{item.q}</h2>
+					<p class="mt-2 text-[#4A4234]">{item.a}</p>
 				</div>
 			))
 		}

@@ -42,36 +42,79 @@ const homeHref = base;
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
 			rel="stylesheet"
 		/>
 	</head>
-	<body class="min-h-screen bg-[#FAF6EC] text-[#5C4F3D] antialiased">
-		<header class="border-b border-[#E8DFC8]">
-			<nav class="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-				<a href={homeHref} class="font-[Fraunces] text-xl font-semibold tracking-tight text-[#2B2013]">
+	<body class="min-h-screen bg-white text-[#4A4234] antialiased">
+		<header class="border-b border-[#EAE4D6] bg-white">
+			<nav class="mx-auto flex max-w-[820px] items-center justify-between px-6 py-5">
+				<a href={homeHref} class="font-[Sora] text-xl font-extrabold tracking-tight text-[#221B10]">
 					ScriptFlow
 				</a>
-				<span class="hidden text-xs font-medium uppercase tracking-wide text-[#C9982E] sm:inline">
+				<span class="hidden text-[15px] font-semibold uppercase tracking-wide text-[#C9982E] sm:inline">
 					On-device transcription
 				</span>
 			</nav>
 		</header>
-		<main class="mx-auto max-w-4xl px-6 py-14">
-			<slot />
-		</main>
-		<footer class="mt-24 border-t border-[#E8DFC8]">
-			<div class="mx-auto max-w-4xl px-6 py-10 text-sm text-[#5C4F3D]">
+
+		<!--
+			Reserved AdSense slots. Every slot below is an EMPTY container with the
+			`ad-slot` class, so `.ad-slot:empty { display:none }` keeps it invisible
+			and zero-height until a real <ins class="adsbygoogle"> is pasted inside.
+			This avoids empty-placeholder boxes (which can hurt AdSense approval) and
+			avoids layout shift once a unit fills in.
+		-->
+
+		<!-- Top leaderboard: centered directly below the header, above main content. -->
+		<div class="ad-slot ad-leaderboard mx-auto mt-6 px-6" data-ad-slot="leaderboard" style="max-width:970px;min-height:0">
+			<!-- AdSense: paste responsive <ins class="adsbygoogle"> here -->
+		</div>
+
+		<!--
+			The content column is intentionally narrow (max 820px) and centered so
+			the page keeps genuinely empty left/right gutters on desktop. The two
+			sticky skyscraper <aside> rails sit in those gutters at >=1280px only;
+			below that they are hidden and the column simply centers. Do NOT fill
+			the gutters with content — they are reserved ad space.
+		-->
+		<div class="mx-auto flex w-full max-w-[1400px] items-start justify-center gap-6 px-4 xl:px-0">
+			<!-- Left skyscraper rail (>=1280px only). -->
+			<aside class="sticky top-[120px] hidden w-[160px] shrink-0 xl:block" aria-hidden="true">
+				<div class="ad-slot ad-skyscraper" data-ad-slot="skyscraper-left" style="width:160px;min-height:0">
+					<!-- AdSense: paste responsive <ins class="adsbygoogle"> here -->
+				</div>
+			</aside>
+
+			<main class="w-full max-w-[820px] px-6 pt-16 pb-24 sm:pt-20">
+				<slot />
+
+				<!-- Bottom in-article slot: centered, just above the footer. -->
+				<div class="ad-slot ad-in-article mx-auto mt-16" data-ad-slot="in-article" style="max-width:728px;min-height:0">
+					<!-- AdSense: paste responsive <ins class="adsbygoogle"> here -->
+				</div>
+			</main>
+
+			<!-- Right skyscraper rail (>=1280px only). -->
+			<aside class="sticky top-[120px] hidden w-[160px] shrink-0 xl:block" aria-hidden="true">
+				<div class="ad-slot ad-skyscraper" data-ad-slot="skyscraper-right" style="width:160px;min-height:0">
+					<!-- AdSense: paste responsive <ins class="adsbygoogle"> here -->
+				</div>
+			</aside>
+		</div>
+
+		<footer class="mt-4 border-t border-[#EAE4D6] bg-[#FAF8F3]">
+			<div class="mx-auto max-w-[820px] px-6 py-12 text-base text-[#4A4234]">
 				<p>
 					Every transcription runs locally in your browser. Nothing you upload
 					is ever sent to a server.
 				</p>
-				<div class="mt-4 flex gap-6">
-					<a href={`${base}about`} class="hover:text-[#B8860B]">About</a>
-					<a href={`${base}privacy`} class="hover:text-[#B8860B]">Privacy Policy</a>
-					<a href={`${base}faq`} class="hover:text-[#B8860B]">FAQ</a>
+				<div class="mt-5 flex gap-7 text-[15px] font-medium">
+					<a href={`${base}about`} class="py-2 text-[#4A4234] transition hover:text-[#B8860B]">About</a>
+					<a href={`${base}privacy`} class="py-2 text-[#4A4234] transition hover:text-[#B8860B]">Privacy Policy</a>
+					<a href={`${base}faq`} class="py-2 text-[#4A4234] transition hover:text-[#B8860B]">FAQ</a>
 				</div>
-				<p class="mt-4 text-[#8A7D66]">&copy; {new Date().getFullYear()} ScriptFlow</p>
+				<p class="mt-5 text-sm text-[#8A7E68]">&copy; {new Date().getFullYear()} ScriptFlow</p>
 			</div>
 		</footer>
 	</body>
